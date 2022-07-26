@@ -15,6 +15,7 @@ pre-commit = "^2.20.0"
 flake8 = "^4.0.1"
 flake8-bugbear = "^22.7.1"
 mypy = "^0.971"
+black = "^22.6.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
@@ -32,4 +33,4 @@ testpaths = [
 omit = [".*", "tests", "dist"]
 
 [tool.coverage.report]
-fail_under = 100
+fail_under = 80
