@@ -1,0 +1,35 @@
+[tool.poetry]
+name = "pythonproject"
+version = "0.1.0"
+description = ""
+authors = ["Matthew Tondreau <mmtondreau@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+
+[tool.poetry.dev-dependencies]
+pytest-mock = "^3.8.2"
+pytest = "^7.1.2"
+coverage = { extras = ["toml"], version = "^6.4.2" }
+pre-commit = "^2.20.0"
+flake8 = "^4.0.1"
+flake8-bugbear = "^22.7.1"
+mypy = "^0.971"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+pythonpath = [
+    "src"
+]
+testpaths = [
+    "tests",
+]
+
+[tool.coverage.run]
+omit = [".*", "tests", "dist"]
+
+[tool.coverage.report]
+fail_under = 100
