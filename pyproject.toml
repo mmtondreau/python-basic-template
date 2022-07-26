@@ -33,4 +33,5 @@ testpaths = [
 omit = [".*", "tests", "dist"]
 
 [tool.coverage.report]
+branch = true
 fail_under = 80
