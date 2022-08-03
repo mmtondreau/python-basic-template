@@ -18,5 +18,5 @@ def service(client_mock: Client) -> Service:
 
 
 def test_hello(service: Service, client_mock: MagicMock) -> None:
-    client_mock.doPost.return_value = "Hello"
+    client_mock.do_post.return_value = "Hello"
     assert service.hello() == "Hello"

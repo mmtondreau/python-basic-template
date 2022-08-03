@@ -1,3 +1,3 @@
 class Client:
-    def doPost(self) -> str:
+    def do_post(self) -> str:
         return "Do expensive post"
