@@ -46,19 +46,5 @@ jobs:
       #----------------------------------------------
       #              run lint
       #----------------------------------------------
-      - name: Run lint
-        run: |
-          poetry run black --check .
-          poetry run flake8 .
-      #----------------------------------------------
-      #              run type check
-      #----------------------------------------------
-      - name: Run type check
-        run: poetry run mypy .
-      #----------------------------------------------
-      #              run test suite
-      #----------------------------------------------
-      - name: Run tests
-        run: |
-          poetry run coverage run -m pytest
-          poetry run coverage report -m
+      - name: Run nox
+        run: poetry run nox
