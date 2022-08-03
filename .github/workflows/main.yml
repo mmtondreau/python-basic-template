@@ -44,7 +44,7 @@ jobs:
       - name: Install library
         run: poetry install --no-interaction
       #----------------------------------------------
-      #              run lint
+      #              run nox
       #----------------------------------------------
       - name: Run nox
         run: poetry run nox
