@@ -1,25 +1,25 @@
 [tool.poetry]
-name = "pythonproject"
+name = "nflstats"
 version = "0.1.0"
 description = ""
 authors = ["Matthew Tondreau <mmtondreau@gmail.com>"]
+readme = "README.md"
+packages = [{include = "nflstats"}]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.13"
 
-[tool.poetry.dev-dependencies]
-pytest-mock = "^3.8.2"
-pytest = "^7.1.2"
-coverage = { extras = ["toml"], version = "^6.4.2" }
-pre-commit = "^2.20.0"
-flake8 = "^4.0.1"
-flake8-bugbear = "^22.7.1"
-mypy = "^0.971"
-black = "^22.6.0"
-nox = "^2022.1.7"
+
+[tool.poetry.group.dev.dependencies]
+flake8 = "^7.1.1"
+black = "^24.10.0"
+mypy = "^1.14.0"
+pytest-mock = "^3.14.0"
+pytest = "^8.3.4"
+pytest-cov = "^6.0.0"
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
+requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
@@ -29,10 +29,5 @@ pythonpath = [
 testpaths = [
     "tests",
 ]
+addopts = "--cov=nflstats --cov-report=xml"
 
-[tool.coverage.run]
-omit = [".*", "tests", "dist"]
-
-[tool.coverage.report]
-branch = true
-fail_under = 80

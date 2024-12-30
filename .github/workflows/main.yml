@@ -1,64 +1,115 @@
-on: [ push, pull_request ]
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      #----------------------------------------------
-      #       check-out repo and set-up python
-      #----------------------------------------------
-      - name: Check out repository
-        uses: actions/checkout@v2
-      - name: Set up python
-        id: setup-python
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.9
-      #----------------------------------------------
-      #  -----  install & configure poetry  -----
-      #----------------------------------------------
-      - name: Install Poetry
-        uses: snok/install-poetry@v1
-        with:
-          virtualenvs-create: true
-          virtualenvs-in-project: true
-          installer-parallel: true
+name: CI Workflow
 
-      #----------------------------------------------
-      #       load cached venv if cache exists
-      #----------------------------------------------
-      - name: Load cached venv
-        id: cached-poetry-dependencies
-        uses: actions/cache@v2
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+env:
+  POETRY_PATH: /home/runner/.local/bin/poetry
+  PYTHON_VERSION: "3.13.1"
+  MODULE_NAME: pythonproject
+
+jobs:
+  lint:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
-          path: .venv
-          key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
-      #----------------------------------------------
-      # install dependencies if cache does not exist
-      #----------------------------------------------
+          python-version: "${{ env.PYTHON_VERSION }}"
+
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          ${{ env.POETRY_PATH }} --version
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/pip
+            ~/.local/share/pypoetry
+          key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-poetry-
+
       - name: Install dependencies
-        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-        run: poetry install --no-interaction --no-root
-      #----------------------------------------------
-      # install your root project, if required
-      #----------------------------------------------
-      - name: Install library
-        run: poetry install --no-interaction
-      #----------------------------------------------
-      #              run lint
-      #----------------------------------------------
-      - name: Run lint
         run: |
-          poetry run black --check .
-          poetry run flake8 .
-      #----------------------------------------------
-      #              run type check
-      #----------------------------------------------
-      - name: Run type check
-        run: poetry run mypy .
-      #----------------------------------------------
-      #              run test suite
-      #----------------------------------------------
-      - name: Run tests
+          ${{ env.POETRY_PATH }} install
+
+      - name: Run mypy
+        run: ${{ env.POETRY_PATH }} run mypy ${{ env.MODULE_NAME }} tests
+
+      - name: Run flake8
+        run: ${{ env.POETRY_PATH }} run flake8 ${{ env.MODULE_NAME }} tests
+
+      - name: Run black (check mode)
+        run: ${{ env.POETRY_PATH }} run black --check ${{ env.MODULE_NAME }} tests
+
+  test:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "${{ env.PYTHON_VERSION }}"
+
+      - name: Install Poetry
         run: |
-          poetry run coverage run -m pytest
-          poetry run coverage report -m
+          curl -sSL https://install.python-poetry.org | python3 -
+          ${{ env.POETRY_PATH }} --version
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/pip
+            ~/.local/share/pypoetry
+          key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-poetry-
+
+      - name: Install dependencies
+        run: |
+          ${{ env.POETRY_PATH }} install
+
+      - name: Run pytest
+        run: ${{ env.POETRY_PATH }} run pytest
+
+      - name: Archive code coverage results
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-coverage-report
+          path: coverage.xml
+
+  sonarqube:
+    needs: test
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download a single artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: code-coverage-report
+
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v4
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
